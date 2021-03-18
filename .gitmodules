@@ -1,4 +1,0 @@
-[submodule "PluginImpl/verilator"]
-	path = PluginImpl/verilator
-	url = git@gitlab.lrz.de:de-tum-ei-eda-esl/etiss-plugin-verilator.git
-    branch = master

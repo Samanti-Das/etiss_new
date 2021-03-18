@@ -1,6 +1,0 @@
-MACRO(InstallJitLib TARGET_NAME)
-    INSTALL(TARGETS ${TARGET_NAME} DESTINATION include/jit/etiss/jit)
-ENDMACRO()
-
-ADD_SUBDIRECTORY(softfloat)
-ADD_SUBDIRECTORY(resources)
