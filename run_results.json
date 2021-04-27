@@ -1,1 +1,1 @@
-{"mips": 0.184222, "Simulation_Time": 0.44289, "CPU_Time": 0.00254969, "CPU_cycle": 81590, "best_mips": 0.184222, "best_hash": "d32eba2f5ad5790be3b63b73b2cbc550e17c2ebe", "regressed_hash": null}
+{"mips": 23.5213, "Simulation_Time": 30.1891, "CPU_Time": 22.1902, "CPU_cycle": 710088000.0, "best_mips": 23.5213, "best_hash": "b47b8f34b69f5ba9c5ad108c98e4f11e844fcb92", "regressed_hash": null}
