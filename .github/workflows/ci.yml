@@ -374,32 +374,7 @@ jobs:
 
 
 
-      - name: delete unnecessary artifacts
-        uses: geekyeggo/delete-artifact@v1
-        with:
-          name: |
-                run_results_tcc.json
-                run_results_gcc.json
-                run_results_llvm.json
-                run_results_tcc_1.json
-                run_results_tcc_2.json
-                run_results_tcc_3.json
-                run_results_tcc_4.json
-                run_results_tcc_5.json
-                run_results_gcc_1.json
 
-                run_results_gcc_3.json
-                run_results_gcc_4.json
-                run_results_gcc_5.json
-                run_results_llvm_1.json
-                run_results_llvm_2.json
-                run_results_llvm_3.json
-                run_results_llvm_4.json
-                run_results_llvm_5.json
-                etiss-Linux.tar
-                etiss-Mac.tar
-
-                run_results.json
 
 
 
@@ -549,6 +524,33 @@ jobs:
           git add Performance_Metrics.md
           git commit -m "update perf"
           git push
+
+       - name: delete unnecessary artifacts
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+                run_results_tcc.json
+                run_results_gcc.json
+                run_results_llvm.json
+                run_results_tcc_1.json
+                run_results_tcc_2.json
+                run_results_tcc_3.json
+                run_results_tcc_4.json
+                run_results_tcc_5.json
+                run_results_gcc_1.json
+
+                run_results_gcc_3.json
+                run_results_gcc_4.json
+                run_results_gcc_5.json
+                run_results_llvm_1.json
+                run_results_llvm_2.json
+                run_results_llvm_3.json
+                run_results_llvm_4.json
+                run_results_llvm_5.json
+                etiss-Linux.tar
+                etiss-Mac.tar
+
+                run_results.json
 
 
 
