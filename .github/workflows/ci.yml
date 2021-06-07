@@ -526,8 +526,8 @@ jobs:
           git push
 
        - name: delete unnecessary artifacts
-        uses: geekyeggo/delete-artifact@v1
-        with:
+         uses: geekyeggo/delete-artifact@v1
+         with:
           name: |
                 run_results_tcc.json
                 run_results_gcc.json
