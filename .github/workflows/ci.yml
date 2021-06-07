@@ -525,9 +525,9 @@ jobs:
           git commit -m "update perf"
           git push
 
-       - name: delete unnecessary artifacts
-         uses: geekyeggo/delete-artifact@v1
-         with:
+      - name: delete unnecessary artifacts
+        uses: geekyeggo/delete-artifact@v1
+        with:
           name: |
                 run_results_tcc.json
                 run_results_gcc.json
