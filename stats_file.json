@@ -1,0 +1,1 @@
+{"gcc": {"mips": [[38.16646, "57689683"]], "best_mips": 38.16646, "best_hash": "57689683", "regressed_hash": null}, "llvm": {"mips": [[21.57088, "57689683"]], "best_mips": 21.57088, "best_hash": "57689683", "regressed_hash": null}, "tcc": {"mips": [[28.99006, "57689683"]], "best_mips": 28.99006, "best_hash": "57689683", "regressed_hash": null}}
