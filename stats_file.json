@@ -1,1 +1,1 @@
-{"tcc": {"mips": [[0.03729966, "fecc7e84"]], "best_mips": 0.03729966, "best_hash": "fecc7e84", "regressed_hash": null}}
+{"tcc": {"mips": [[0.03729966, "fecc7e84"], [0.0309507, "40c4030c"]], "best_mips": 0.03729966, "best_hash": "fecc7e84", "regressed_hash": null}}
