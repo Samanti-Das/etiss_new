@@ -14,15 +14,11 @@ matplotlib.use('Agg')
 ### Template to be published under an issue as a comment ###
 ISSUE_TEMPLATE = r'''
 **Performance Statistics**
-
 % for jit_engine_name, old_best_hash, best_hash_link, new_data, message, best_data, best_diff in zip_form:
-
 **Status for the ${jit_engine_name} Just-In-Time Engine** (for commit ${current_hash})**:** ${message}
 **Current dhrystone MIPS for ${jit_engine_name} JIT** **:** ${new_data}
 **Previous best for ${jit_engine_name} JIT** (recorded in commit ${old_best_hash})**:** ${best_data}, difference ${f'{best_diff:.2%}'}
-
 % endfor
-
 <sub>This comment was created automatically, please do not change!</sub>
 '''
 ### Template to be published in Github wiki ###
@@ -43,13 +39,16 @@ ${message}
 [[performance_metrics_${benchmark_type}.svg]]
 '''
 # Declaration of Global Variables:
-KEY_TO_COMPARE_LIST = ["mips", "Simulation_Time"] # the key from the input files to compare across engines
+KEY_TO_COMPARE_LIST = {
+    "dhrystone": ("mips", lambda a, b: a > b),
+    "translation": ("Simulation_Time", lambda a, b: a < b)
+}
+
 MAX_HISTORY = 50  # max amount of past data to keep
 TOLERANCE = 0.2
 
 
 def calculating_performance_metrics(input_files, stats_file, issue_md, wiki_md, graph_file, current_hash, repo_url, benchmark_type):
-
     # truncating hash value to first 8 characters
     current_hash = current_hash[:8]
 
@@ -57,12 +56,7 @@ def calculating_performance_metrics(input_files, stats_file, issue_md, wiki_md, 
 
     runs = defaultdict(list)
 
-    if benchmark_type == "dhrystone":
-        print("entering true loop")
-        KEY_TO_COMPARE = KEY_TO_COMPARE_LIST[0]
-    if benchmark_type == "translation":
-        print("entering false loop")
-        KEY_TO_COMPARE = KEY_TO_COMPARE_LIST[1]
+    KEY_TO_COMPARE, COMPARISON_FN = KEY_TO_COMPARE_LIST[benchmark_type]
 
     # get engine name and run no from filename of input
     # input files should have the format "run_<engine name>_<run no>.json"
@@ -131,48 +125,26 @@ def calculating_performance_metrics(input_files, stats_file, issue_md, wiki_md, 
                 diffs[engine] = diff
 
                 # Comparison logic for MIPS:
-                if benchmark_type == "dhrystone": 
-                    if value > best:
-                        stats[engine][f"best_" + KEY_TO_COMPARE] = value
-                        stats[engine][f"best_hash"] = current_hash[:8]
-                        messages[engine] = f'🥇 New best performance!'
+                if COMPARISON_FN(value, best):
+                    stats[engine][f"best_" + KEY_TO_COMPARE] = value
+                    stats[engine][f"best_hash"] = current_hash[:8]
+                    messages[engine] = f'🥇 New best performance!'
 
-                    elif diff < -TOLERANCE:
-                        if stats[engine]["regressed_hash"] is None:
-                            stats[engine]["regressed_hash"] = current_hash[:8]
-                            messages[engine] = "Regression introduced"
-                        else:
-                            messages[engine] = "Regressed since commit " + \
-                                stats[engine]['regressed_hash']
-
+                elif diff < -TOLERANCE:
+                    if stats[engine]["regressed_hash"] is None:
+                        stats[engine]["regressed_hash"] = current_hash[:8]
+                        messages[engine] = "Regression introduced"
                     else:
-                        if stats[engine]["regressed_hash"] is not None:
-                            stats[engine]["regressed_hash"] = None
-                            messages[engine] = "Regression cleared"
-                        else:
-                            messages[engine] = "No significant performance change"
+                        messages[engine] = "Regressed since commit " + \
+                            stats[engine]['regressed_hash']
 
-                # Comparison logic for Simulation Time:
-                if benchmark_type == "translation":
-                    if value < best:
-                        stats[engine][f"best_" + KEY_TO_COMPARE] = value
-                        stats[engine][f"best_hash"] = current_hash[:8]
-                        messages[engine] = f'🥇 New best performance!'
-
-                    elif diff > -TOLERANCE:
-                        if stats[engine]["regressed_hash"] is None:
-                            stats[engine]["regressed_hash"] = current_hash[:8]
-                            messages[engine] = "Regression introduced"
-                        else:
-                            messages[engine] = "Regressed since commit " + \
-                                stats[engine]['regressed_hash']
-
+                else:
+                    if stats[engine]["regressed_hash"] is not None:
+                        stats[engine]["regressed_hash"] = None
+                        messages[engine] = "Regression cleared"
                     else:
-                        if stats[engine]["regressed_hash"] is not None:
-                            stats[engine]["regressed_hash"] = None
-                            messages[engine] = "Regression cleared"
-                        else:
-                            messages[engine] = "No significant performance change"
+                        messages[engine] = "No significant performance change"
+
 
     # Template rendering for issue and Github Wiki:
     issue_template = Template(text=ISSUE_TEMPLATE)
@@ -211,10 +183,13 @@ def calculating_performance_metrics(input_files, stats_file, issue_md, wiki_md, 
     fig = plt.figure(figsize=(20, 10))
 
     for engine in stats:
+        print(engine)
         commit_history = list(chain.from_iterable(islice(item, 1, 2)
                               for item in stats[engine][KEY_TO_COMPARE]))
+        print(commit_history)
         key_to_compare_value = list(chain.from_iterable(islice(item, 0, 1)
                           for item in stats[engine][KEY_TO_COMPARE]))
+        print(key_to_compare_value)
         plt.plot(commit_history, key_to_compare_value,
                  label=f'{KEY_TO_COMPARE}_{engine}')
 
@@ -265,3 +240,4 @@ if __name__ == '__main__':
 
 calculating_performance_metrics(args.input_files, args.stats_file, args.issue_md,
                                 args.wiki_md, args.graph_file, args.current_hash, args.repo_url, args.benchmark_type)
+Footer
