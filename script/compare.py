@@ -240,4 +240,3 @@ if __name__ == '__main__':
 
 calculating_performance_metrics(args.input_files, args.stats_file, args.issue_md,
                                 args.wiki_md, args.graph_file, args.current_hash, args.repo_url, args.benchmark_type)
-Footer
