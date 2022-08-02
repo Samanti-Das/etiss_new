@@ -175,7 +175,8 @@ jobs:
       matrix:
         run-no: [1, 2, 3, 4, 5]
         jit-engine: ["tcc", "gcc", "llvm"]
-
+    
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'pull_request'
     needs: build
     runs-on: ubuntu-latest
 
@@ -618,18 +619,18 @@ jobs:
           git add Translation_Performance.md performance_metrics_translation.svg
           git commit -m "update trans perf"
           git push
-  # delete-artifact:
-  #   if: always()
-  #   needs: [display-wiki, display-pr, display-wiki-translation]
-  #   runs-on: ubuntu-latest
-  #   continue-on-error: true
+  delete-artifact:
+    if: always()
+    needs: [display-wiki, display-pr, display-wiki-translation]
+    runs-on: ubuntu-latest
+    continue-on-error: true
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Delete Artifact
-  #       uses: geekyeggo/delete-artifact@1-glob-support
-  #       with:
-  #         name: "*"
-  #         useGlob: true
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@1-glob-support
+        with:
+          name: "*"
+          useGlob: true
