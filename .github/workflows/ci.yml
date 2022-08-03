@@ -11,8 +11,8 @@ jobs:
       matrix:
         config:
           - {name: "Linux", os: ubuntu-latest, cmakegen: "", llvm: "linux-gnu-ubuntu-20.04", llvm-ext: ".tar.xz", tc: "linux-ubuntu14", tc-ext: ".tar.gz", unpack: "tar xf"}
-          #- {name: "Windows", os: windows-latest, cmakegen: "-G \"Unix Makefiles\" -DCMAKE_MAKE_PROGRAM=make", llvm: "", llvm-ext: "", tc: "w64-mingw32", tc-ext: ".zip", unpack: "unzip"}
-          #- {name: "Mac", os: macos-10.15, cmakegen: "", llvm: "apple-darwin", llvm-ext: ".tar.xz", tc: "apple-darwin", tc-ext: ".tar.gz", unpack: "tar xf"}
+          - {name: "Windows", os: windows-latest, cmakegen: "-G \"Unix Makefiles\" -DCMAKE_MAKE_PROGRAM=make", llvm: "", llvm-ext: "", tc: "w64-mingw32", tc-ext: ".zip", unpack: "unzip"}
+          - {name: "Mac", os: macos-10.15, cmakegen: "", llvm: "apple-darwin", llvm-ext: ".tar.xz", tc: "apple-darwin", tc-ext: ".tar.gz", unpack: "tar xf"}
 
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.name }}_build
@@ -24,16 +24,16 @@ jobs:
       if: matrix.config.name == 'Linux'
       run: |
         sudo apt-get install libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-    # - name: Requirements (Windows)
-    #   if: matrix.config.name == 'Windows'
-    #   working-directory: ${{runner.workspace}}
-    #   shell: bash
-    #   run: |
-    #     choco install boost-msvc-14.2
-    #     choco install wget unzip
-    #     choco install llvm --version=11.0.0 --allow-downgrade
-    #     choco install make
-    #     ln -s "/c/Program Files/LLVM" llvm-lib
+    - name: Requirements (Windows)
+      if: matrix.config.name == 'Windows'
+      working-directory: ${{runner.workspace}}
+      shell: bash
+      run: |
+        choco install boost-msvc-14.2
+        choco install wget unzip
+        choco install llvm --version=11.0.0 --allow-downgrade
+        choco install make
+        ln -s "/c/Program Files/LLVM" llvm-lib
 
     - name: Requirements (Mac)
       if: matrix.config.name == 'Mac'
@@ -125,8 +125,8 @@ jobs:
       matrix:
         config:
           - {name: "Linux", os: ubuntu-20.04, cmakegen: "", llvm: "linux-gnu-ubuntu-20.04", llvm-ext: ".tar.xz", tc: "linux-ubuntu14", tc-ext: ".tar.gz", unpack: "tar xf"}
-          #- {name: "Windows", os: windows-latest, cmakegen: "-G \"MinGW Makefiles\"", llvm: "", llvm-ext: "", tc: "w64-mingw32", tc-ext: ".zip", unpack: "unzip"}
-          #- {name: "Mac", os: macos-10.15, cmakegen: "", llvm: "apple-darwin", llvm-ext: ".tar.xz", tc: "apple-darwin", tc-ext: ".tar.gz", unpack: "tar xf"}
+          - {name: "Windows", os: windows-latest, cmakegen: "-G \"MinGW Makefiles\"", llvm: "", llvm-ext: "", tc: "w64-mingw32", tc-ext: ".zip", unpack: "unzip"}
+          - {name: "Mac", os: macos-10.15, cmakegen: "", llvm: "apple-darwin", llvm-ext: ".tar.xz", tc: "apple-darwin", tc-ext: ".tar.gz", unpack: "tar xf"}
 
     needs: build
     runs-on: ${{ matrix.config.os }}
@@ -156,12 +156,14 @@ jobs:
         ./run_helper.sh ../examples/SW/riscv_cpp/build/riscv_example.elf llvm
         ./run_helper.sh ../examples/SW/riscv/build64/riscv_example.elf
         ./run_helper.sh ../examples/SW/riscv_cpp/build64/riscv_example.elf
+
+
     # - name: Test (Windows)
     #   working-directory: ${{runner.workspace}}/install/examples/bare_etiss_processor/build
     #   if: matrix.config.name == 'Windows'
     #   shell: bash
     #   run: |
-    #     PATH=$PATH:/d/a/etiss_new/install/lib/
+    #     PATH=$PATH:/d/a/etiss/install/lib/
     #     cd $BUILD_TYPE
     #     ./main.exe --vp.elf_file=../../../SW/riscv/build/riscv_example.elf --jit.type=TCCJIT --etiss.loglevel=4 -i../../../SW/riscv/memsegs.ini -pLogger
     #     ./main.exe --vp.elf_file=../../../SW/riscv/build/riscv_example.elf --jit.type=LLVMJIT --etiss.loglevel=4 -i../../../SW/riscv/memsegs.ini -pLogger
@@ -237,12 +239,11 @@ jobs:
             ls benchmark_results_new
             rm -rf results_
             mkdir results_
-      - name: Run comparison (Push)
-        if: ${{github.event_name == 'push'}}
+      - name: Run comparison
+        if: github.event_name == 'push' 
         run: python3 script/compare.py benchmark_results_new/run_dhrystone_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics_dhrystone.svg -g ${{ github.sha }} -r $GITHUB_REPOSITORY -b "dhrystone"
 
-      - name: Run comparison (PR)
-        if: ${{github.event_name == 'pull_request'}}
+        if: github.event_name == 'pull_request'
         run: python3 script/compare.py benchmark_results_new/run_dhrystone_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics_dhrystone.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY -b "dhrystone"
 
       - name: Deploy results to git
@@ -261,6 +262,7 @@ jobs:
           path: benchmark_results_old/stats_file.json
 
       - name: uploading image
+        if: github.event_name == 'push' 
         uses: actions/upload-artifact@v2
         with:
           name: performance_metrics_dhrystone.svg
@@ -274,6 +276,7 @@ jobs:
           path: results_/issue.md
 
       - name: Upload wiki text
+        if: github.event_name == 'push' 
         uses: actions/upload-artifact@v2
         with:
           name: wiki.md
@@ -395,12 +398,15 @@ jobs:
           git add Dhrystone_Performance.md performance_metrics_dhrystone.svg
           git commit -m "update perf dhrystone"
           git push
+
+
   benchmark_translation:
     strategy:
       matrix:
         run-no: [1, 2, 3, 4, 5]
         jit-engine: ["tcc", "gcc", "llvm"]
 
+    #if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'pull_request'
     needs: build
     runs-on: ubuntu-latest
 
@@ -461,13 +467,13 @@ jobs:
             ls benchmark_results_new
             rm -rf results_
             mkdir results_
-      - name: Run comparison (Push)
+      - name: Run comparison
         if: ${{github.event_name == 'push'}}
         run: python3 script/compare.py benchmark_results_new/run_translation_*.json -o benchmark_results_old/stats_file_translation.json -i results_/issue.md -w results_/wiki_translation.md -gr results_/performance_metrics_translation.svg -g ${{ github.sha }} -r $GITHUB_REPOSITORY  -b "translation"
 
-      # - name: Run comparison (PR)
-      #   if: ${{github.event_name == 'pull_request'}}
-      #   run: python3 script/compare.py benchmark_results_new/run_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY
+      
+        if: ${{github.event_name == 'pull_request'}}
+        run: python3 script/compare.py benchmark_results_new/run_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY
 
       - name: Deploy results to git
         if: ${{github.event_name == 'push'}}
@@ -485,6 +491,7 @@ jobs:
           path: benchmark_results_old/stats_file_translation.json
 
       - name: uploading image
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v2
         with:
           name: performance_metrics_translation.svg
@@ -497,6 +504,7 @@ jobs:
           path: results_/issue_translation.md
 
       - name: Upload wiki text
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v2
         with:
           name: wiki_translation.md
@@ -619,19 +627,19 @@ jobs:
           git add Translation_Performance.md performance_metrics_translation.svg
           git commit -m "update trans perf"
           git push
-          
-  # delete-artifact:
-  #   if: always()
-  #   needs: [display-wiki, display-pr, display-wiki-translation, test]
-  #   runs-on: ubuntu-latest
-  #   continue-on-error: true
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  delete-artifact:
+    if: always()
+    needs: [display-wiki, display-pr, display-wiki-translation, test]
+    runs-on: ubuntu-latest
+    continue-on-error: true
 
-  #     - name: Delete Artifact
-  #       uses: geekyeggo/delete-artifact@1-glob-support
-  #       with:
-  #         name: "*"
-  #         useGlob: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@1-glob-support
+        with:
+          name: "*"
+          useGlob: true
