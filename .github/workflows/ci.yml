@@ -485,7 +485,7 @@ jobs:
         if: ${{github.event_name == 'push'}}
         run: python3 script/compare.py benchmark_results_new/run_translation_*.json -o benchmark_results_old/stats_file_translation.json -i results_/issue.md -w results_/wiki_translation.md -gr results_/performance_metrics_translation.svg -g ${{ github.sha }} -r $GITHUB_REPOSITORY  -b "translation"
 
-      
+      - name: Run comparison for pull request
         if: ${{github.event_name == 'pull_request'}}
         run: python3 script/compare.py benchmark_results_new/run_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY
 
