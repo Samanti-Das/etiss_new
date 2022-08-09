@@ -481,13 +481,19 @@ jobs:
             ls benchmark_results_new
             rm -rf results_
             mkdir results_
-      - name: Run comparison
-        if: ${{github.event_name == 'push'}}
-        run: python3 script/compare.py benchmark_results_new/run_translation_*.json -o benchmark_results_old/stats_file_translation.json -i results_/issue.md -w results_/wiki_translation.md -gr results_/performance_metrics_translation.svg -g ${{ github.sha }} -r $GITHUB_REPOSITORY  -b "translation"
 
-      - name: Run comparison for pull request
-        if: ${{github.event_name == 'pull_request'}}
-        run: python3 script/compare.py benchmark_results_new/run_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY
+      
+      - name: if-else condition
+        uses: haya14busa/action-cond@v1
+        id: condval
+        with:
+          cond: ${{ github.event_name == 'push' }}
+          if_true:  python3 script/compare.py benchmark_results_new/run_translation_*.json -o benchmark_results_old/stats_file_translation.json -i results_/issue.md -w results_/wiki_translation.md -gr results_/performance_metrics_translation.svg -g ${{ github.sha }} -r $GITHUB_REPOSITORY  -b "translation"
+          if_false: python3 script/compare.py benchmark_results_new/run_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY
+      
+      - name: Run comparison
+        run: ${{ steps.condval.outputs.value }}
+        
 
       - name: Deploy results to git
         if: ${{github.event_name == 'push'}}
