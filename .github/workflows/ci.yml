@@ -239,10 +239,24 @@ jobs:
             ls benchmark_results_new
             rm -rf results_
             mkdir results_
+
+
+      - name: if-else condition
+        uses: haya14busa/action-cond@v1
+        id: condval
+        with:
+          cond: ${{ github.event_name == 'pull_request' }}
+          if_true: "value for pull request event"
+          if_false: "value for non pull request event"
+
+      - name: Use conditional value
+        run: echo "${{ steps.condval.outputs.value }}"
+
       - name: Run comparison
         if: github.event_name == 'push' 
         run: python3 script/compare.py benchmark_results_new/run_dhrystone_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics_dhrystone.svg -g ${{ github.sha }} -r $GITHUB_REPOSITORY -b "dhrystone"
 
+      - name: Run comparison for pull request
         if: github.event_name == 'pull_request'
         run: python3 script/compare.py benchmark_results_new/run_dhrystone_*.json -o benchmark_results_old/stats_file.json -i results_/issue.md -w results_/wiki.md -gr results_/performance_metrics_dhrystone.svg -g ${{ github.event.pull_request.head.sha }} -r $GITHUB_REPOSITORY -b "dhrystone"
 
